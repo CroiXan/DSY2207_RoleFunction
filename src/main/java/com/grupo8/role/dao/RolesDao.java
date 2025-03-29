@@ -69,7 +69,7 @@ public class RolesDao {
     }
 
     public void eliminar(Long id) throws Exception {
-        String sql = "DELETE FROM PACIENTE WHERE ID = ?";
+        String sql = "DELETE FROM ROLES WHERE ID = ?";
         try (Connection conn = OracleConnectionUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);

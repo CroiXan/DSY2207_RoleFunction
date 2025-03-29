@@ -9,6 +9,15 @@ public class UserRoles {
     private Long role_id;
     private LocalDateTime fecha_asignacion;
     
+    public UserRoles(Long id, Long user_id, Long role_id, LocalDateTime fecha_asignacion) {
+        this.id = id;
+        this.user_id = user_id;
+        this.role_id = role_id;
+        this.fecha_asignacion = fecha_asignacion;
+    }
+    public UserRoles() {
+    }
+
     public Long getId() {
         return id;
     }
