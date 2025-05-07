@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,12 +13,11 @@ import com.grupo8.role.model.UserRoles;
 public class UserRoleDao {
 
     public void insertar(UserRoles userRol) throws Exception {
-        String sql = "INSERT INTO USER_ROLES (USER_ID, ROLE_ID, FECHA_ASIGNACION) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO USER_ROLES (USER_ID, ROLE_ID) VALUES (?, ?)";
         try (Connection conn = OracleConnectionUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userRol.getUser_id());
             ps.setLong(2, userRol.getRole_id());
-            ps.setTimestamp(2, Timestamp.valueOf(userRol.getFecha_asignacion()) );
             ps.executeUpdate();
         }
     }

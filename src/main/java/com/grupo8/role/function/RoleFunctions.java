@@ -87,6 +87,10 @@ public class RoleFunctions {
         }
 
         try {
+            Roles rolSearch = rolesDao.buscarPorId(Long.parseLong(id));
+            if (rolSearch == null) {
+                return request.createResponseBuilder(HttpStatus.NOT_FOUND).body("Rol no encontrado").build();
+            }
             rol.setId(Long.parseLong(id));
             rolesDao.actualizar(rol);
             return request.createResponseBuilder(HttpStatus.OK).body("Rol actualizado").build();
@@ -104,6 +108,10 @@ public class RoleFunctions {
         final ExecutionContext context) {
 
         try {
+            Roles rolSearch = rolesDao.buscarPorId(Long.parseLong(id));
+            if (rolSearch == null) {
+                return request.createResponseBuilder(HttpStatus.NOT_FOUND).body("Rol no encontrado").build();
+            }
             rolesDao.eliminar(Long.parseLong(id));
             return request.createResponseBuilder(HttpStatus.OK).body("Rol eliminado").build();
         } catch (Exception e) {
