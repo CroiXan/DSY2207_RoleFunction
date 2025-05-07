@@ -108,4 +108,12 @@ public class UserRoleDao {
         }
     }
 
+    public void eliminarPorRol(Long role_id) throws Exception {
+        String sql = "DELETE FROM USER_ROLES WHERE ROLE_ID = ?";
+        try (Connection conn = OracleConnectionUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, role_id);
+            ps.executeUpdate();
+        }
+    }
 }

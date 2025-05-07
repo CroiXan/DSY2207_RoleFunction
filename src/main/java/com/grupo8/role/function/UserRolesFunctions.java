@@ -3,10 +3,19 @@ package com.grupo8.role.function;
 import java.util.List;
 import java.util.Optional;
 
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.util.BinaryData;
+import com.azure.messaging.eventgrid.EventGridEvent;
+import com.azure.messaging.eventgrid.EventGridPublisherClient;
+import com.azure.messaging.eventgrid.EventGridPublisherClientBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.grupo8.role.dao.RolesDao;
 import com.grupo8.role.dao.UserRoleDao;
+import com.grupo8.role.model.EventGridObject;
 import com.grupo8.role.model.Roles;
+import com.grupo8.role.model.UnassignRoleRequest;
 import com.grupo8.role.model.UserRoles;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpMethod;
@@ -15,6 +24,7 @@ import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.HttpStatus;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.BindingName;
+import com.microsoft.azure.functions.annotation.EventGridTrigger;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 
@@ -22,6 +32,9 @@ public class UserRolesFunctions {
 
     private final UserRoleDao userRoleDao = new UserRoleDao();
     private final RolesDao rolesDao = new RolesDao();
+
+    private final String eventGridEndpoint = "https://dsy2007grupo8eventgrid.eastus2-1.eventgrid.azure.net/api/events";
+    private final String eventGridKey = "5FfNuMNJI1WEYUmVYOr16GgbXu8ezyYaXgHtJrDovp1c1K1mLfCpJQQJ99BDACHYHv6XJ3w3AAABAZEGje4u";
 
     @FunctionName("createUserRole")
     public HttpResponseMessage crearUserRole(
@@ -146,4 +159,59 @@ public class UserRolesFunctions {
         }
     }
 
+    @FunctionName("unassignRoleTrigger")
+    public HttpResponseMessage UnassignRoleTrigger(
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.POST }, authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<UnassignRoleRequest>> request,
+            final ExecutionContext context) {
+
+        if (request.getBody().get().getRole_id().longValue() == 0L) {
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("Id no valido").build();
+        }
+
+        try {
+            EventGridPublisherClient<EventGridEvent> client = new EventGridPublisherClientBuilder()
+                    .endpoint(eventGridEndpoint)
+                    .credential(new AzureKeyCredential(eventGridKey))
+                    .buildEventGridEventPublisherClient();
+
+            EventGridEvent event = new EventGridEvent("/UnassignRole/"+request.getBody().get().getRole_id(),
+                    "User.auditsave", BinaryData.fromObject(request.getBody().get()),
+                    "1.0");
+
+            client.sendEvent(event);
+
+            return request.createResponseBuilder(HttpStatus.OK).body("Evento Generado").build();
+        } catch (Exception e) {
+            context.getLogger().severe(e.getMessage());
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error generar evento").build();
+        }
+    }
+
+    @FunctionName("unassignRoleEvent")
+    public void RunUnassignRoleEvent(
+            @EventGridTrigger(name = "unassignRoleEvent") String content,
+            final ExecutionContext context) {
+
+        if (content == null || content.isEmpty()) {
+            return;
+        }
+
+        context.getLogger().info("Evento recibido: " + content);
+
+        Gson gson = new Gson();
+
+        try {
+
+            EventGridObject event = gson.fromJson(content, EventGridObject.class);
+
+            JsonElement dataElement = gson.toJsonTree(event.getData());
+            UnassignRoleRequest data = gson.fromJson(dataElement, UnassignRoleRequest.class);
+
+            userRoleDao.eliminarPorRol(data.getRole_id());
+
+        } catch (Exception e) {
+            context.getLogger().severe(e.getMessage());
+        }
+    }
 }
