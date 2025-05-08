@@ -1,6 +1,7 @@
 package com.grupo8.role.function;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.grupo8.role.dao.RolesDao;
 import com.grupo8.role.dao.UserRoleDao;
+import com.grupo8.role.model.AssignRoleRequest;
 import com.grupo8.role.model.EventGridObject;
 import com.grupo8.role.model.Roles;
 import com.grupo8.role.model.UnassignRoleRequest;
@@ -219,4 +221,84 @@ public class UserRolesFunctions {
             context.getLogger().severe(e.getMessage());
         }
     }
+
+    @FunctionName("assignRoleTrigger")
+    public HttpResponseMessage AssignRoleTrigger(
+            @HttpTrigger(name = "req", methods = { HttpMethod.POST }, authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<String>> request,
+            final ExecutionContext context) {
+
+            try 
+            {
+                String requestBody = request.getBody().orElse("");
+
+                ObjectMapper mapper = new ObjectMapper();
+                long usuarioId = mapper.readTree(requestBody).path("data").path("usuarioId").asLong();
+
+                if (usuarioId == 0L) {
+                    return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("usuarioId no válido").build();
+                }
+
+                Map<String, Object> payload = Map.of(
+                    "USER_ID", usuarioId,
+                    "ROLE_ID", 1041
+                );
+
+                EventGridPublisherClient<EventGridEvent> client = new EventGridPublisherClientBuilder()
+                    .endpoint(eventGridEndpoint)
+                    .credential(new AzureKeyCredential(eventGridKey))
+                    .buildEventGridEventPublisherClient();
+
+                EventGridEvent event = new EventGridEvent(
+                    "/AssignRole/" + usuarioId,
+                    "User.assignRole",
+                    BinaryData.fromObject(payload),
+                    "1.0"
+                );
+
+                client.sendEvent(event);
+
+                return request.createResponseBuilder(HttpStatus.OK).body("Evento generado correctamente").build();
+
+            } 
+            catch (Exception e) {
+                context.getLogger().severe("Error: " + e.getMessage());
+                return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al generar evento").build();
+            }
+    }
+
+    @FunctionName("assignRoleEvent")
+    public void RunAssignRoleEvent(
+            @EventGridTrigger(name = "assignRoleEvent") String content,
+            final ExecutionContext context) {
+    
+        if (content == null || content.isEmpty()) {
+            return;
+        }
+    
+        context.getLogger().info("Evento recibido: " + content);
+    
+        Gson gson = new Gson();
+    
+        try {
+            EventGridObject event = gson.fromJson(content, EventGridObject.class);
+            JsonElement dataElement = gson.toJsonTree(event.getData());
+            AssignRoleRequest data = gson.fromJson(dataElement, AssignRoleRequest.class);
+    
+            data.setRole_id(1041L);
+    
+            UserRoles userRole = new UserRoles();
+            userRole.setUser_id(data.getUser_id());
+            userRole.setRole_id(data.getRole_id());
+    
+            userRoleDao.insertar(userRole);
+    
+            context.getLogger().info("Rol asignado correctamente: USER_ID = " + data.getUser_id() + ", ROLE_ID = " + data.getRole_id());
+    
+        } catch (Exception e) {
+            context.getLogger().severe("Error al procesar evento: " + e.getMessage());
+        }
+    }
+    
+    
+
 }
