@@ -2,6 +2,7 @@ package com.grupo8.role.function;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.azure.core.credential.AzureKeyCredential;
 import com.azure.core.util.BinaryData;
@@ -17,6 +18,7 @@ import com.grupo8.role.model.EventGridObject;
 import com.grupo8.role.model.Roles;
 import com.grupo8.role.model.UnassignRoleRequest;
 import com.grupo8.role.model.UserRoles;
+import com.grupo8.role.model.UserRolesDTO;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpMethod;
 import com.microsoft.azure.functions.HttpRequestMessage;
@@ -44,7 +46,7 @@ public class UserRolesFunctions {
 
         try {
             context.getLogger().info(request.getBody());
-            
+
             ObjectMapper mapper = new ObjectMapper();
             UserRoles userRol = mapper.readValue(request.getBody(), UserRoles.class);
 
@@ -130,7 +132,10 @@ public class UserRolesFunctions {
 
         try {
             List<UserRoles> userRoleList = userRoleDao.obtenerTodos();
-            return request.createResponseBuilder(HttpStatus.OK).body(userRoleList).build();
+            List<UserRolesDTO> dtoList = userRoleList.stream()
+                    .map(UserRolesDTO::new)
+                    .collect(Collectors.toList());
+            return request.createResponseBuilder(HttpStatus.OK).body(dtoList).build();
         } catch (Exception e) {
             context.getLogger().severe(e.getMessage());
             return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener la lista")
@@ -175,7 +180,7 @@ public class UserRolesFunctions {
                     .credential(new AzureKeyCredential(eventGridKey))
                     .buildEventGridEventPublisherClient();
 
-            EventGridEvent event = new EventGridEvent("/UnassignRole/"+request.getBody().get().getRole_id(),
+            EventGridEvent event = new EventGridEvent("/UnassignRole/" + request.getBody().get().getRole_id(),
                     "User.auditsave", BinaryData.fromObject(request.getBody().get()),
                     "1.0");
 
