@@ -15,7 +15,7 @@ public class UserRoleDao {
     public void insertar(UserRoles userRol) throws Exception {
         String sql = "INSERT INTO USER_ROLES (USER_ID, ROLE_ID) VALUES (?, ?)";
         try (Connection conn = OracleConnectionUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, userRol.getUser_id());
             ps.setLong(2, userRol.getRole_id());
             ps.executeUpdate();
@@ -25,16 +25,15 @@ public class UserRoleDao {
     public UserRoles buscarPorId(Long id) throws Exception {
         String sql = "SELECT * FROM USER_ROLES WHERE ID = ?";
         try (Connection conn = OracleConnectionUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return new UserRoles(
-                    rs.getLong("ID"),
-                    rs.getLong("USER_ID"),
-                    rs.getLong("ROLE_ID"),
-                    rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime()
-                );
+                        rs.getLong("ID"),
+                        rs.getLong("USER_ID"),
+                        rs.getLong("ROLE_ID"),
+                        rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime());
             }
         }
         return null;
@@ -44,16 +43,15 @@ public class UserRoleDao {
         List<UserRoles> listaUserRol = new ArrayList<>();
         String sql = "SELECT * FROM USER_ROLES WHERE ROLE_ID = ?";
         try (Connection conn = OracleConnectionUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UserRoles userRol = new UserRoles(
-                    rs.getLong("ID"),
-                    rs.getLong("USER_ID"),
-                    rs.getLong("ROLE_ID"),
-                    rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime()
-                );
+                        rs.getLong("ID"),
+                        rs.getLong("USER_ID"),
+                        rs.getLong("ROLE_ID"),
+                        rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime());
                 listaUserRol.add(userRol);
             }
         }
@@ -64,16 +62,15 @@ public class UserRoleDao {
         List<UserRoles> listaUserRol = new ArrayList<>();
         String sql = "SELECT * FROM USER_ROLES WHERE USER_ID = ?";
         try (Connection conn = OracleConnectionUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 UserRoles userRol = new UserRoles(
-                    rs.getLong("ID"),
-                    rs.getLong("USER_ID"),
-                    rs.getLong("ROLE_ID"),
-                    rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime()
-                );
+                        rs.getLong("ID"),
+                        rs.getLong("USER_ID"),
+                        rs.getLong("ROLE_ID"),
+                        rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime());
                 listaUserRol.add(userRol);
             }
         }
@@ -84,15 +81,14 @@ public class UserRoleDao {
         List<UserRoles> listaUserRol = new ArrayList<>();
         String sql = "SELECT * FROM USER_ROLES";
         try (Connection conn = OracleConnectionUtil.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 UserRoles userRol = new UserRoles(
-                    rs.getLong("ID"),
-                    rs.getLong("USER_ID"),
-                    rs.getLong("ROLE_ID"),
-                    rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime()
-                );
+                        rs.getLong("ID"),
+                        rs.getLong("USER_ID"),
+                        rs.getLong("ROLE_ID"),
+                        rs.getTimestamp("FECHA_ASIGNACION").toLocalDateTime());
                 listaUserRol.add(userRol);
             }
         }
@@ -102,7 +98,7 @@ public class UserRoleDao {
     public void eliminar(Long id) throws Exception {
         String sql = "DELETE FROM USER_ROLES WHERE ID = ?";
         try (Connection conn = OracleConnectionUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
             ps.executeUpdate();
         }
@@ -111,9 +107,10 @@ public class UserRoleDao {
     public void eliminarPorRol(Long role_id) throws Exception {
         String sql = "DELETE FROM USER_ROLES WHERE ROLE_ID = ?";
         try (Connection conn = OracleConnectionUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, role_id);
             ps.executeUpdate();
         }
     }
+
 }

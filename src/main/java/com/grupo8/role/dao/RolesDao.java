@@ -77,4 +77,19 @@ public class RolesDao {
         }
     }
 
+    
+    public List<String> listarNombreRolesPorUsuario(Long userId) throws Exception {
+        List<String> nombresRoles = new ArrayList<>();
+        String sql = "SELECT r.nombre FROM user_roles ur JOIN roles r ON ur.role_id = r.id WHERE ur.user_id = ?";
+        try (Connection conn = OracleConnectionUtil.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, userId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                nombresRoles.add(rs.getString("nombre"));
+            }
+        }
+        return nombresRoles;
+    }
+
 }

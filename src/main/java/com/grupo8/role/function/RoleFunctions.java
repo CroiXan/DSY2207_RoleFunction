@@ -22,9 +22,9 @@ public class RoleFunctions {
 
     @FunctionName("createRole")
     public HttpResponseMessage crearRoles(
-        @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.FUNCTION)
-        HttpRequestMessage<Optional<Roles>> request,
-        final ExecutionContext context) {
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.POST }, authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<Roles>> request,
+            final ExecutionContext context) {
 
         Roles rol = request.getBody().orElse(null);
         if (rol == null) {
@@ -36,16 +36,17 @@ public class RoleFunctions {
             return request.createResponseBuilder(HttpStatus.CREATED).body("Rol creado").build();
         } catch (Exception e) {
             context.getLogger().severe(e.getMessage());
-            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al insertar Rol").build();
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al insertar Rol")
+                    .build();
         }
     }
 
     @FunctionName("getRole")
     public HttpResponseMessage obtenerRolesPorId(
-        @HttpTrigger(name = "req", methods = {HttpMethod.GET}, route = "getRole/{id}", authLevel = AuthorizationLevel.FUNCTION)
-        HttpRequestMessage<Optional<String>> request,
-        @BindingName("id") String id,
-        final ExecutionContext context) {
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.GET }, route = "getRole/{id}", authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<String>> request,
+            @BindingName("id") String id,
+            final ExecutionContext context) {
 
         try {
             Roles rol = rolesDao.buscarPorId(Long.parseLong(id));
@@ -55,31 +56,33 @@ public class RoleFunctions {
             return request.createResponseBuilder(HttpStatus.OK).body(rol).build();
         } catch (Exception e) {
             context.getLogger().severe(e.getMessage());
-            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al consultar Rol").build();
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al consultar Rol")
+                    .build();
         }
     }
 
     @FunctionName("getAllRoles")
     public HttpResponseMessage obtenerTodosLosRoless(
-        @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.FUNCTION)
-        HttpRequestMessage<Optional<String>> request,
-        final ExecutionContext context) {
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.GET }, authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<String>> request,
+            final ExecutionContext context) {
 
         try {
             List<Roles> rols = rolesDao.obtenerTodos();
             return request.createResponseBuilder(HttpStatus.OK).body(rols).build();
         } catch (Exception e) {
             context.getLogger().severe(e.getMessage());
-            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener la lista").build();
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al obtener la lista")
+                    .build();
         }
     }
 
     @FunctionName("updateRole")
     public HttpResponseMessage actualizarRoles(
-        @HttpTrigger(name = "req", methods = {HttpMethod.PUT}, route = "updateRole/{id}", authLevel = AuthorizationLevel.FUNCTION)
-        HttpRequestMessage<Optional<Roles>> request,
-        @BindingName("id") String id,
-        final ExecutionContext context) {
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.PUT }, route = "updateRole/{id}", authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<Roles>> request,
+            @BindingName("id") String id,
+            final ExecutionContext context) {
 
         Roles rol = request.getBody().orElse(null);
         if (rol == null) {
@@ -96,16 +99,17 @@ public class RoleFunctions {
             return request.createResponseBuilder(HttpStatus.OK).body("Rol actualizado").build();
         } catch (Exception e) {
             context.getLogger().severe(e.getMessage());
-            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar Rol").build();
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar Rol")
+                    .build();
         }
     }
 
     @FunctionName("deleteRole")
     public HttpResponseMessage eliminarRoles(
-        @HttpTrigger(name = "req", methods = {HttpMethod.DELETE}, route = "deleteRole/{id}", authLevel = AuthorizationLevel.FUNCTION)
-        HttpRequestMessage<Optional<String>> request,
-        @BindingName("id") String id,
-        final ExecutionContext context) {
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.DELETE }, route = "deleteRole/{id}", authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<String>> request,
+            @BindingName("id") String id,
+            final ExecutionContext context) {
 
         try {
             Roles rolSearch = rolesDao.buscarPorId(Long.parseLong(id));
@@ -116,27 +120,50 @@ public class RoleFunctions {
             return request.createResponseBuilder(HttpStatus.OK).body("Rol eliminado").build();
         } catch (Exception e) {
             context.getLogger().severe(e.getMessage());
-            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar Rol").build();
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al eliminar Rol")
+                    .build();
         }
     }
 
     @FunctionName("buscarArchivos")
     public HttpResponseMessage buscarArchivos(
-        @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.FUNCTION, 
-                    route = "buscarArchivos")
-        HttpRequestMessage<Optional<String>> request,
-        final ExecutionContext context) {
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.GET }, authLevel = AuthorizationLevel.FUNCTION, route = "buscarArchivos") HttpRequestMessage<Optional<String>> request,
+            final ExecutionContext context) {
 
         String patron = request.getQueryParameters().getOrDefault("patron", "");
-        String directorio = "/home"; 
-        
+        String directorio = "/home";
+
         try {
             List<String> archivos = FileSearchUtil.buscarArchivosEnDirectorio(directorio, patron);
             return request.createResponseBuilder(HttpStatus.OK).body(archivos).build();
         } catch (Exception e) {
             context.getLogger().severe("Error buscando archivos: " + e.getMessage());
             return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al buscar archivos").build();
+                    .body("Error al buscar archivos").build();
+        }
+    }
+
+    @FunctionName("getRolesByUserId")
+    public HttpResponseMessage obtenerRolesPorUsuario(
+            @HttpTrigger(name = "req", methods = {
+                    HttpMethod.GET }, route = "user/{userId}/roles", authLevel = AuthorizationLevel.FUNCTION) HttpRequestMessage<Optional<String>> request,
+            @BindingName("userId") String userIdStr,
+            final ExecutionContext context) {
+
+        try {
+            Long userId = Long.parseLong(userIdStr);
+            List<String> roles = rolesDao.listarNombreRolesPorUsuario(userId);
+
+            return request.createResponseBuilder(HttpStatus.OK).body(roles).build();
+
+        } catch (NumberFormatException e) {
+            return request.createResponseBuilder(HttpStatus.BAD_REQUEST)
+                    .body("ID de usuario inválido").build();
+        } catch (Exception e) {
+            context.getLogger().severe(e.getMessage());
+            return request.createResponseBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al obtener roles del usuario").build();
         }
     }
 }
