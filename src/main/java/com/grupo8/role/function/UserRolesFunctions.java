@@ -1,7 +1,6 @@
 package com.grupo8.role.function;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -238,10 +237,9 @@ public class UserRolesFunctions {
                     return request.createResponseBuilder(HttpStatus.BAD_REQUEST).body("usuarioId no válido").build();
                 }
 
-                Map<String, Object> payload = Map.of(
-                    "USER_ID", usuarioId,
-                    "ROLE_ID", 1041
-                );
+                UserRoles userRole = new UserRoles();
+                userRole.setUser_id(usuarioId);
+                userRole.setRole_id(1041L);
 
                 EventGridPublisherClient<EventGridEvent> client = new EventGridPublisherClientBuilder()
                     .endpoint(eventGridEndpoint)
@@ -251,7 +249,7 @@ public class UserRolesFunctions {
                 EventGridEvent event = new EventGridEvent(
                     "/AssignRole/" + usuarioId,
                     "User.assignRole",
-                    BinaryData.fromObject(payload),
+                    BinaryData.fromObject(userRole),
                     "1.0"
                 );
 
